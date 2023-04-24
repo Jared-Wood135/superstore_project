@@ -55,7 +55,19 @@ def acquire_superstore():
     OUTPUT:
     superstore = pandas dataframe
     '''
-    print('template')
+    query = '''
+            SELECT 
+                *
+            FROM
+                orders
+                LEFT JOIN categories USING(`Category ID`)
+                LEFT JOIN customers USING(`Customer ID`)
+                LEFT JOIN products USING(`Product ID`)
+                LEFT JOIN regions USING(`Region ID`)
+            '''
+    url = env.get_db_url('superstore_db')
+    superstore = pd.read_sql(query, url)
+    return superstore
 
 # =======================================================================================================
 # acquire_superstore END
@@ -74,7 +86,21 @@ def prepare_superstore():
     OUTPUT:
     new_superstore = pandas dataframe of the prepared superstore dataframe
     '''
-    print('Template')
+    superstore = acquire_superstore()
+    columns_to_drop = [
+    'Region ID',
+    'Product ID',
+    'Customer ID',
+    'Category ID'
+    ]
+    superstore = superstore.drop(columns=columns_to_drop)
+    superstore['Order Date'] = pd.to_datetime(superstore['Order Date'])
+    superstore['Ship Date'] = pd.to_datetime(superstore['Ship Date'])
+    superstore.columns = superstore.columns.str.lower()
+    superstore.columns = superstore.columns.str.replace(' ', '_')
+    superstore.columns = superstore.columns.str.replace('-', '_')
+    new_superstore = superstore
+    return new_superstore
 
 # =======================================================================================================
 # prepare_superstore END
